@@ -1,0 +1,113 @@
+{
+  "planHash": "013d084603e9dd99fd7b4f57c03434aa0fca244b5d7ad1a75e86dd254d823c66",
+  "phase": "standalone",
+  "recordedAtUtc": "2026-10-14T01:55:20.4241249Z",
+  "retryCount": 3,
+  "resetBaseline": false,
+  "complete": true,
+  "result": {
+    "setupSucceeded": true,
+    "setupDurationMs": 521,
+    "setupFailureOutput": null,
+    "assertions": [
+      {
+        "name": "typescript-no-emit",
+        "kind": "process",
+        "verificationMethod": "exit-code",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": 0,
+        "outputSample": "",
+        "durationMs": 3284
+      },
+      {
+        "name": "nest-build",
+        "kind": "process",
+        "verificationMethod": "exit-code",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": 0,
+        "outputSample": "$ nest build\r\n",
+        "durationMs": 5092
+      },
+      {
+        "name": "tests-pass",
+        "kind": "process",
+        "verificationMethod": "test-results",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": 0,
+        "outputSample": "$ jest \u0022--runInBand\u0022\r\nPASS src/modules/users/use-case/create-user.use-case.spec.ts\r\nPASS src/modules/auth/application/use-case/change-password.usecase.spec.ts\r\nPASS src/infra/auth/auth.service.spec.ts\r\nPASS src/infra/auth/jwt-auth.guard.spec.ts\r\nPASS src/modules/auth/application/use-case/login.usecase.spec.ts\r\nPASS src/infra/auth/permissions.guard.spec.ts\r\n\r\nTest Suites: 6 passed, 6 total\r\nTests:       18 passed, 18 total\r\nSnapshots:   0 total\r\nTime:        3.116 s\r\nRan all test suites.\r\n",
+        "durationMs": 4436,
+        "testResults": {
+          "testFramework": "jest",
+          "runnerDetectedFrom": "package_json",
+          "testsTotal": 18,
+          "testsPassed": 18,
+          "testsFailed": 0,
+          "testsSkipped": 0,
+          "parseFailed": false
+        }
+      }
+    ],
+    "executions": [
+      {
+        "source": "setup[0]",
+        "resolvedExecutable": "C:\\Users\\cleit\\AppData\\Roaming\\npm\\pnpm.CMD",
+        "args": [
+          "install",
+          "--frozen-lockfile"
+        ],
+        "cwd": "c:\\Users\\cleit\\Desktop\\agrolider\\industrial-control",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      },
+      {
+        "source": "typescript-no-emit",
+        "resolvedExecutable": "C:\\Users\\cleit\\AppData\\Roaming\\npm\\pnpm.CMD",
+        "args": [
+          "exec",
+          "tsc",
+          "--noEmit",
+          "-p",
+          "tsconfig.json"
+        ],
+        "cwd": "c:\\Users\\cleit\\Desktop\\agrolider\\industrial-control",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      },
+      {
+        "source": "nest-build",
+        "resolvedExecutable": "C:\\Users\\cleit\\AppData\\Roaming\\npm\\pnpm.CMD",
+        "args": [
+          "build"
+        ],
+        "cwd": "c:\\Users\\cleit\\Desktop\\agrolider\\industrial-control",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      },
+      {
+        "source": "tests-pass",
+        "resolvedExecutable": "C:\\Users\\cleit\\AppData\\Roaming\\npm\\pnpm.CMD",
+        "args": [
+          "run",
+          "test",
+          "--runInBand"
+        ],
+        "cwd": "c:\\Users\\cleit\\Desktop\\agrolider\\industrial-control",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      }
+    ]
+  }
+}
