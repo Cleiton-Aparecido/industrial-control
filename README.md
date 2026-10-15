@@ -57,6 +57,76 @@ $ pnpm run test:e2e
 $ pnpm run test:cov
 ```
 
+## Authentication
+
+Copy `.env.example` to `.env` and set the PostgreSQL values, a unique random
+`JWT_SECRET` of at least 32 characters, `JWT_ALGORITHM=HS256`, and
+`JWT_EXPIRES_IN` in seconds. The API rejects missing/weak JWT configuration.
+New passwords use Argon2id (minimum 12 characters, maximum 128). Existing bcrypt
+hashes are upgraded after a successful login. Existing plaintext passwords are
+converted by the explicit one-time `pnpm passwords:migrate-legacy` command; run
+it after taking a database backup and before exposing the upgraded API.
+
+### Initial setup
+
+Apply schema changes, then provision the administrator using the environment
+variables `INITIAL_ADMIN_NAME`, `INITIAL_ADMIN_EMAIL`, and
+`INITIAL_ADMIN_PASSWORD` (minimum 12 characters):
+
+```bash
+pnpm migration:show
+pnpm migration:run
+pnpm passwords:migrate-legacy
+pnpm bootstrap:admin
+pnpm start:dev
+```
+
+The bootstrap validates its inputs before connecting and creates the first
+administrator, system role, and permission catalog in one transaction. It never
+stores a credential in a migration, logs secret values, or overwrites an
+existing account. Re-running it does not create or reset an administrator.
+Remove the initial-admin variables from the deployment environment after setup.
+
+### API access
+
+- `POST /auth/login` accepts `{ "email": "...", "password": "..." }` and
+  returns an `accessToken`; attempts are limited to five per minute per client.
+- Send protected requests with `Authorization: Bearer <accessToken>`.
+- `GET /auth/me` returns the current user's profile.
+- `POST /auth/password/change` takes `currentPassword`, `newPassword`, and
+  `confirmNewPassword`; it returns a replacement token and invalidates all older
+  tokens for that account.
+- `POST /auth/logout` invalidates all tokens for the current account.
+- `/users`, `/roles`, and `/permissions` require explicit permission metadata;
+  multiple permissions on a route are all required. Missing metadata denies
+  access. New endpoint permissions must be added to the bootstrap catalog and
+  explicitly applied with `@RequirePermissions`.
+- Users created by an administrator must change their password before accessing
+  normal endpoints. User state and permissions are loaded from PostgreSQL for
+  each request, so deactivation and RBAC changes take effect immediately.
+
+### Migrations
+
+Use `pnpm migration:generate <Name>` to generate a migration, `pnpm migration:run`
+to apply pending migrations, `pnpm migration:show` to inspect status, and
+`pnpm migration:revert` to revert the latest migration. The new security
+migration adds columns, indexes, RBAC tables, and audit storage without dropping
+the existing `User` table. It refuses to add the case-normalized unique email
+index when duplicate addresses exist; resolve those records before retrying.
+The base user migration creates `uuid-ossp` idempotently for fresh databases.
+Its rollback removes RBAC associations/schema and the new user columns but does
+not delete administrator rows; users left without roles cannot access protected
+routes until a valid role is assigned again. Do not run rollback without a
+backup and an access recovery plan.
+
+Audit rows are retained indefinitely by default so deployments do not silently
+discard security evidence. Set and enforce a retention period according to the
+organization's legal/compliance policy before production rollout.
+
+Rate limiting currently uses in-memory storage. Multi-instance deployments need
+a shared throttler store (for example Redis). Refresh tokens are not issued;
+short-lived access tokens plus `tokenVersion` revocation are used instead.
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.

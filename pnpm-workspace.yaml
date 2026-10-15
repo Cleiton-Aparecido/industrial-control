@@ -1,2 +1,6 @@
 allowBuilds:
+  '@scarf/scarf': false
+  argon2: true
+  core-js: false
+  nodemon: true
   unrs-resolver: true
