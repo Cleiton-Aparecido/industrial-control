@@ -25,6 +25,9 @@ export class ProductEntity {
   @Column({ type: 'varchar', length: 40 })
   unit: string;
 
+  @Column({ type: 'numeric', precision: 14, scale: 2, default: '0.00' })
+  price: string;
+
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive: boolean;
 

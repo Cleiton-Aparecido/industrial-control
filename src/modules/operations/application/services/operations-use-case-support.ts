@@ -21,6 +21,11 @@ import {
 } from 'src/infra/stock/entities/stock-movement.entity';
 import { StockMovementDto } from 'src/modules/stock/application/dto/stock.dto';
 import { toMilliUnits } from 'src/infra/stock/stock-quantity';
+import {
+  fromMinorUnits,
+  multiplyPriceByMilliQuantity,
+  toMinorUnits,
+} from 'src/infra/money/money';
 
 @Injectable()
 export class OperationsUseCaseSupport {
@@ -139,7 +144,22 @@ export class OperationsUseCaseSupport {
       where: { orderId: order.id },
       order: { createdAt: 'ASC' },
     });
-    return { ...order, items };
+    const itemsWithTotals = items.map((item) => ({
+      ...item,
+      lineTotal: fromMinorUnits(
+        multiplyPriceByMilliQuantity(
+          toMinorUnits(item.unitPriceSnapshot),
+          toMilliUnits(item.quantity),
+        ),
+      ),
+    }));
+    const totalAmount = fromMinorUnits(
+      itemsWithTotals.reduce(
+        (total, item) => total + toMinorUnits(item.lineTotal),
+        0n,
+      ),
+    );
+    return { ...order, items: itemsWithTotals, totalAmount };
   }
 
   protected async recordTransition(
