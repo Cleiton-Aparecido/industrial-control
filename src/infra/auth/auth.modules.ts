@@ -2,15 +2,15 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
-import { DataModule } from 'src/infra/data/data.modules';
-import { AuthService } from './auth.service';
-import { JwtAuthGuard } from './jwt-auth.guard';
-import { PermissionsGuard } from './permissions.guard';
+import { UsersInfrastructureModule } from 'src/infra/users/user.module';
+import { AuthService } from './service/auth.service';
+import { JwtAuthGuard } from './guard/jwt-auth.guard';
+import { PermissionsGuard } from './guard/permissions.guard';
 
 @Module({
   imports: [
     ConfigModule,
-    DataModule,
+    UsersInfrastructureModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

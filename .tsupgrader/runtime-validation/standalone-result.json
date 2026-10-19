@@ -1,13 +1,13 @@
 {
   "planHash": "013d084603e9dd99fd7b4f57c03434aa0fca244b5d7ad1a75e86dd254d823c66",
   "phase": "standalone",
-  "recordedAtUtc": "2026-10-14T01:55:20.4241249Z",
-  "retryCount": 3,
+  "recordedAtUtc": "2026-10-16T00:40:19.3450004Z",
+  "retryCount": 7,
   "resetBaseline": false,
   "complete": true,
   "result": {
     "setupSucceeded": true,
-    "setupDurationMs": 521,
+    "setupDurationMs": 515,
     "setupFailureOutput": null,
     "assertions": [
       {
@@ -20,7 +20,7 @@
         "skippedReason": null,
         "exitCode": 0,
         "outputSample": "",
-        "durationMs": 3284
+        "durationMs": 3707
       },
       {
         "name": "nest-build",
@@ -32,7 +32,7 @@
         "skippedReason": null,
         "exitCode": 0,
         "outputSample": "$ nest build\r\n",
-        "durationMs": 5092
+        "durationMs": 6769
       },
       {
         "name": "tests-pass",
@@ -43,13 +43,13 @@
         "skipped": false,
         "skippedReason": null,
         "exitCode": 0,
-        "outputSample": "$ jest \u0022--runInBand\u0022\r\nPASS src/modules/users/use-case/create-user.use-case.spec.ts\r\nPASS src/modules/auth/application/use-case/change-password.usecase.spec.ts\r\nPASS src/infra/auth/auth.service.spec.ts\r\nPASS src/infra/auth/jwt-auth.guard.spec.ts\r\nPASS src/modules/auth/application/use-case/login.usecase.spec.ts\r\nPASS src/infra/auth/permissions.guard.spec.ts\r\n\r\nTest Suites: 6 passed, 6 total\r\nTests:       18 passed, 18 total\r\nSnapshots:   0 total\r\nTime:        3.116 s\r\nRan all test suites.\r\n",
-        "durationMs": 4436,
+        "outputSample": "$ jest \u0022--runInBand\u0022\r\nPASS test/login.usecase.spec.ts\r\nPASS test/create-user.use-case.spec.ts\r\nPASS test/change-password.usecase.spec.ts\r\nPASS test/auth.service.spec.ts\r\nPASS test/jwt-auth.guard.spec.ts\r\nPASS test/permissions.guard.spec.ts\r\nPASS test/document-number.spec.ts\r\n\r\nTest Suites: 7 passed, 7 total\r\nTests:       23 passed, 23 total\r\nSnapshots:   0 total\r\nTime:        3.742 s, estimated 4 s\r\nRan all test suites.\r\n",
+        "durationMs": 5288,
         "testResults": {
           "testFramework": "jest",
           "runnerDetectedFrom": "package_json",
-          "testsTotal": 18,
-          "testsPassed": 18,
+          "testsTotal": 23,
+          "testsPassed": 23,
           "testsFailed": 0,
           "testsSkipped": 0,
           "parseFailed": false
