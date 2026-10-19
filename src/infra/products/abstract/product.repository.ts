@@ -2,7 +2,7 @@ import { ProductEntity } from '../entities/product.entity';
 
 export type CreateProductData = Pick<
   ProductEntity,
-  'name' | 'description' | 'sku' | 'unit' | 'isActive'
+  'name' | 'description' | 'sku' | 'unit' | 'price' | 'isActive'
 >;
 
 export type ProductPage = { items: ProductEntity[]; total: number };

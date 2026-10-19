@@ -978,7 +978,7 @@ components:
               example: ADJUSTMENT_IN
     CreateProduct:
       type: object
-      required: [name, unit]
+      required: [name, unit, price]
       properties:
         name:
           type: string
@@ -992,6 +992,10 @@ components:
         unit:
           type: string
           example: saco
+        price:
+          type: string
+          pattern: '^(?:0|[1-9]\d{0,11})(?:\.\d{1,2})?$'
+          example: '25.50'
     UpdateProduct:
       type: object
       properties:
@@ -1007,6 +1011,10 @@ components:
         unit:
           type: string
           example: saco
+        price:
+          type: string
+          pattern: '^(?:0|[1-9]\d{0,11})(?:\.\d{1,2})?$'
+          example: '27.00'
     CreateCustomer:
       type: object
       required: [documentNumber, name]
@@ -1084,6 +1092,11 @@ components:
               quantity:
                 type: string
                 example: '2.000'
+              unitPrice:
+                type: string
+                description: Se omitido, usa o preço atual do produto.
+                pattern: '^(?:0|[1-9]\d{0,11})(?:\.\d{1,2})?$'
+                example: '24.90'
         customerNotes:
           type: string
           example: Entregar pela manhã

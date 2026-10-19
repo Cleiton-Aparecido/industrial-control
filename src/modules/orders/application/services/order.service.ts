@@ -15,6 +15,11 @@ import { OrderItemEntity } from 'src/infra/orders/entities/order-item.entity';
 import { OrderStatusHistoryEntity } from 'src/infra/orders/entities/order-status-history.entity';
 import { ProductEntity } from 'src/infra/products/entities/product.entity';
 import {
+  fromMinorUnits,
+  multiplyPriceByMilliQuantity,
+  toMinorUnits,
+} from 'src/infra/money/money';
+import {
   StockMovementEntity,
   StockMovementType,
 } from 'src/infra/stock/entities/stock-movement.entity';
@@ -73,12 +78,33 @@ export class OrderService extends OperationsUseCaseSupport {
           string,
           Awaited<ReturnType<typeof this.lockBalance>>
         >();
+        const products = new Map<string, ProductEntity>();
         for (const productId of [...requested.keys()].sort()) {
           const product = await this.getProductWithManager(manager, productId);
           if (!product.isActive) {
             throw new ConflictException(`Produto inativo: ${product.name}`);
           }
+          products.set(productId, product);
           balances.set(productId, await this.lockBalance(manager, productId));
+        }
+
+        const orderLines = new Map<
+          string,
+          { productId: string; quantity: bigint; unitPriceSnapshot: string }
+        >();
+        for (const item of input.items) {
+          const product = products.get(item.productId)!;
+          const unitPriceSnapshot = fromMinorUnits(
+            toMinorUnits(item.unitPrice ?? product.price),
+          );
+          const lineKey = `${item.productId}:${unitPriceSnapshot}`;
+          const existingLine = orderLines.get(lineKey);
+          orderLines.set(lineKey, {
+            productId: item.productId,
+            quantity:
+              (existingLine?.quantity ?? 0n) + toMilliUnits(item.quantity),
+            unitPriceSnapshot,
+          });
         }
 
         for (const [productId, quantity] of requested) {
@@ -116,21 +142,10 @@ export class OrderService extends OperationsUseCaseSupport {
         const orderItems = manager.getRepository(OrderItemEntity);
         const movements = manager.getRepository(StockMovementEntity);
         for (const [productId, quantity] of requested) {
-          const product = await manager
-            .getRepository(ProductEntity)
-            .findOneByOrFail({ id: productId });
           const balance = balances.get(productId)!;
           const reservedBefore = toMilliUnits(balance.quantityReserved);
           balance.quantityReserved = fromMilliUnits(reservedBefore + quantity);
           await manager.save(balance);
-          await orderItems.save({
-            orderId: order.id,
-            productId,
-            productNameSnapshot: product.name,
-            productSkuSnapshot: product.sku,
-            unitSnapshot: product.unit,
-            quantity: fromMilliUnits(quantity),
-          });
           await movements.save({
             productId,
             movementType: StockMovementType.RESERVATION,
@@ -146,6 +161,18 @@ export class OrderService extends OperationsUseCaseSupport {
             performedByUserId: actorId,
           });
         }
+        for (const line of orderLines.values()) {
+          const product = products.get(line.productId)!;
+          await orderItems.save({
+            orderId: order.id,
+            productId: line.productId,
+            productNameSnapshot: product.name,
+            productSkuSnapshot: product.sku,
+            unitSnapshot: product.unit,
+            quantity: fromMilliUnits(line.quantity),
+            unitPriceSnapshot: line.unitPriceSnapshot,
+          });
+        }
         await manager.getRepository(OrderStatusHistoryEntity).save({
           orderId: order.id,
           previousStatus: null,
@@ -154,7 +181,18 @@ export class OrderService extends OperationsUseCaseSupport {
           notes: 'Pedido criado e enviado para a fila logística',
         });
         await this.audit(manager, actorId, 'order.created', 'order', order.id, {
-          itemCount: requested.size,
+          itemCount: orderLines.size,
+          totalAmount: fromMinorUnits(
+            [...orderLines.values()].reduce(
+              (total, line) =>
+                total +
+                multiplyPriceByMilliQuantity(
+                  toMinorUnits(line.unitPriceSnapshot),
+                  line.quantity,
+                ),
+              0n,
+            ),
+          ),
         });
         return this.orderResponse(manager, order);
       });

@@ -23,8 +23,14 @@ export class ProductRepository extends IProductRepository {
         productId: product.id,
       });
       await manager.query(
-        `INSERT INTO "audit_logs" ("actor_user_id", "action", "resource_type", "resource_id") VALUES ($1, $2, $3, $4)`,
-        [actorId, 'product.created', 'product', product.id],
+        `INSERT INTO "audit_logs" ("actor_user_id", "action", "resource_type", "resource_id", "metadata") VALUES ($1, $2, $3, $4, $5::jsonb)`,
+        [
+          actorId,
+          'product.created',
+          'product',
+          product.id,
+          JSON.stringify({ price: product.price }),
+        ],
       );
       return product;
     });

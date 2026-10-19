@@ -35,6 +35,15 @@ export class OrderItemEntity {
   @Column({ type: 'numeric', precision: 14, scale: 3 })
   quantity: string;
 
+  @Column({
+    name: 'unit_price_snapshot',
+    type: 'numeric',
+    precision: 14,
+    scale: 2,
+    default: '0.00',
+  })
+  unitPriceSnapshot: string;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
 }

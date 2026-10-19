@@ -7,6 +7,7 @@ import {
 import { IProductRepository } from '../abstract/product.repository';
 import { AuditLogService } from 'src/infra/data/audit-log.service';
 import { isUniqueConstraintViolation } from 'src/infra/data/is-unique-constraint-violation';
+import { fromMinorUnits, toMinorUnits } from 'src/infra/money/money';
 import {
   CreateProductDto,
   UpdateProductDto,
@@ -28,6 +29,7 @@ export class ProductService {
           description: input.description ?? null,
           sku: input.sku?.trim().toUpperCase() || null,
           unit: input.unit,
+          price: fromMinorUnits(toMinorUnits(input.price)),
           isActive: true,
         },
         actorId,
@@ -54,7 +56,11 @@ export class ProductService {
   async update(id: string, input: UpdateProductDto, actorId: string) {
     const product = await this.products.findById(id);
     if (!product) throw new NotFoundException('Produto não encontrado');
+    const previousPrice = product.price;
     Object.assign(product, input);
+    if (input.price !== undefined) {
+      product.price = fromMinorUnits(toMinorUnits(input.price));
+    }
     if (input.sku !== undefined) {
       product.sku = input.sku.trim().toUpperCase() || null;
     }
@@ -65,6 +71,12 @@ export class ProductService {
         throw new ConflictException('SKU já cadastrado');
       }
       throw error;
+    }
+    if (product.price !== previousPrice) {
+      await this.audit.record(actorId, 'product.price.updated', 'product', id, {
+        previousPrice,
+        newPrice: product.price,
+      });
     }
     await this.audit.record(actorId, 'product.updated', 'product', id, {
       changedFields: Object.keys(input),

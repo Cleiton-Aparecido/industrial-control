@@ -31,6 +31,17 @@ export class CreateOrderItemDto {
   @IsString()
   @Matches(/^(?:0|[1-9]\d{0,10})(?:\.\d{1,3})?$/)
   quantity: string;
+
+  @ApiPropertyOptional({
+    example: '24.90',
+    description:
+      'Preço unitário negociado; quando omitido, usa o preço atual do produto.',
+  })
+  @IsOptional()
+  @Transform(decimalString)
+  @IsString()
+  @Matches(/^(?:0|[1-9]\d{0,11})(?:\.\d{1,2})?$/)
+  unitPrice?: string;
 }
 
 export class CreateOrderDto {
@@ -88,6 +99,12 @@ export class OrderItemResponseDto {
 
   @ApiProperty({ example: '2.000' })
   quantity: string;
+
+  @ApiProperty({ example: '24.90' })
+  unitPriceSnapshot: string;
+
+  @ApiProperty({ example: '49.80' })
+  lineTotal: string;
 }
 
 export class OrderResponseDto {
@@ -132,6 +149,9 @@ export class OrderResponseDto {
 
   @ApiProperty({ type: [OrderItemResponseDto] })
   items: OrderItemResponseDto[];
+
+  @ApiProperty({ example: '49.80' })
+  totalAmount: string;
 
   @ApiProperty({ format: 'date-time' })
   submittedAt: string;
