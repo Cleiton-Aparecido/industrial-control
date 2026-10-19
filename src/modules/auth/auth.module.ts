@@ -1,13 +1,18 @@
 import { Module } from '@nestjs/common';
-import { DataModule } from 'src/infra/data/data.modules';
 import { AuthInfrastructureModule } from 'src/infra/auth/auth.modules';
-import { AuthController } from './presentation/auth.controller';
-import { LoginUseCase } from './application/use-case/login.usecase';
-import { ChangePasswordUseCase } from './application/use-case/change-password.usecase';
-import { LogoutUseCase } from './application/use-case/logout.usecase';
+import { UsersInfrastructureModule } from 'src/infra/users/user.module';
+import { AuditLogInfrastructureModule } from 'src/infra/data/audit-log.module';
+import { AuthController } from './presentation/controllers/auth.controller';
+import { LoginUseCase } from './application/use-cases/login.usecase';
+import { ChangePasswordUseCase } from './application/use-cases/change-password.usecase';
+import { LogoutUseCase } from './application/use-cases/logout.usecase';
 
 @Module({
-  imports: [DataModule, AuthInfrastructureModule],
+  imports: [
+    AuthInfrastructureModule,
+    UsersInfrastructureModule,
+    AuditLogInfrastructureModule,
+  ],
   controllers: [AuthController],
   providers: [LoginUseCase, ChangePasswordUseCase, LogoutUseCase],
 })

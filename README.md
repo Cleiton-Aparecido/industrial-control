@@ -127,6 +127,86 @@ Rate limiting currently uses in-memory storage. Multi-instance deployments need
 a shared throttler store (for example Redis). Refresh tokens are not issued;
 short-lived access tokens plus `tokenVersion` revocation are used instead.
 
+## Produtos, estoque, clientes e pedidos
+
+Os contextos `products`, `customers`, `stock`, `orders` e `logistics` possuem
+módulos NestJS, controllers em `presentation/controllers`, DTOs e casos de uso
+em `application/`. Usuários, autenticação e acesso seguem a mesma organização.
+As entidades TypeORM específicas ficam em `src/infra/<contexto>/entities`; a
+configuração, auditoria global e migrations permanecem em `src/infra/data/`.
+`OperationsModule` fornece apenas o suporte às transações que cruzam pedidos e
+estoque; os controllers não dependem de um serviço de operações genérico.
+
+A migration `1800000000000-CreateCommerceOperations` cria produtos, clientes,
+saldos, movimentações, pedidos, itens e histórico de status. Execute
+`pnpm migration:run` para aplicá-la e `pnpm migration:revert` para reverter a
+última migration. O catálogo das permissões é inserido sem atribuição
+automática a papéis existentes; associe-as em `/roles/:id/permissions`. O
+rollback remove as tabelas do domínio, mas preserva o catálogo RBAC e suas
+associações administradas.
+
+Os casos de uso mantêm acesso TypeORM no suporte transacional compartilhado
+para preservar atomicidade entre estoque e pedidos. A extração desse limite
+para portas de repositório/UoW permanece uma evolução arquitetural pendente.
+
+O saldo usa `numeric(14,3)` e o backend mantém quantidades decimais como strings
+e unidades inteiras de milésimo durante os cálculos. Entradas, saídas e ajustes
+são transacionais, registram usuário, motivo e saldos anterior/posterior, e
+aceitam `Idempotency-Key`. A disponibilidade é saldo físico menos reservas.
+Ao criar o pedido, os itens são validados e reservados em uma transação com
+bloqueio das linhas de saldo; o pedido entra em `PENDING`. A logística assume
+em `PROCESSING`, prepara em `READY_FOR_SHIPMENT`, e o despacho para `IN_TRANSIT`
+baixa saldo físico e reserva uma única vez. Cancelamentos antes do despacho
+liberam a reserva. `DELIVERED` não altera estoque. Preços, rascunhos, múltiplos
+depósitos e comprovantes não foram adicionados sem regra operacional definida.
+
+Principais rotas (todas exigem bearer JWT e permissão declarada):
+
+- Produtos: `POST/GET /products`, `GET/PATCH /products/:id`, ativação,
+  `GET /products/:id/stock` e `/stock-movements`.
+- Clientes: `POST/GET /customers`, `GET /customers/by-document/:document`,
+  ou `GET /customers/by-document?document=11.222.333%2F0001-81`,
+  `GET/PATCH /customers/:id`, ativação/desativação e histórico de pedidos.
+  CPF/CNPJ são normalizados e validados; o índice único PostgreSQL cobre
+  concorrência. CNPJ alfanumérico também é aceito.
+- Estoque: `POST /stock/entries`, `/exits`, `/adjustments`, `GET /stock/balances`
+  e `/stock/movements`. Quantidades são positivas, com até três casas decimais.
+- Pedidos: `POST/GET /orders`, `GET /orders/my-orders`, `GET /orders/:id`,
+  `GET /orders/:id/history` e `POST /orders/:id/cancel`. Repetir a criação com
+  a mesma `Idempotency-Key` retorna o pedido original do mesmo usuário.
+- Logística: `GET /logistics/orders` e as operações `start-processing`,
+  `ready-for-shipment`, `dispatch` e `confirm-delivery` em `/logistics/orders/:id`.
+
+Exemplos de entrada e pedido:
+
+```json
+{
+  "productId": "uuid-do-produto",
+  "quantity": "12.500",
+  "reason": "Recebimento da nota fiscal"
+}
+```
+
+```json
+{
+  "customerId": "uuid-do-cliente",
+  "items": [{ "productId": "uuid-do-produto", "quantity": "2.000" }],
+  "customerNotes": "Entrega pela manhã"
+}
+```
+
+Permissões principais: `products.create/read/update/deactivate`,
+`products.stock.read`, `stock.read/entry/exit/adjust/movements.read`,
+`customers.create/read/update/deactivate`, `orders.create/read/read.all/cancel`,
+`orders.cancel.all` e `logistics.orders.read/process/prepare-shipment/dispatch/
+confirm-delivery`. `orders.read` limita vendedores aos próprios pedidos;
+`orders.read.all` amplia o escopo. A fila logística exige permissão própria.
+
+Verificações: `pnpm test -- --runInBand`, `pnpm test:e2e -- --runInBand` e
+`pnpm build`.
+Testes concorrentes de migrations/transações requerem PostgreSQL configurado
+pelas variáveis `DB_*`.
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.

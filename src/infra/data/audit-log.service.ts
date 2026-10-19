@@ -1,13 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Inject, Injectable } from '@nestjs/common';
+import { IAuditLogRepository } from './abstract/audit-log.repository';
 import { AuditLogEntity } from './entities/audit-log.entity';
 
 @Injectable()
 export class AuditLogService {
   constructor(
-    @InjectRepository(AuditLogEntity)
-    private readonly repository: Repository<AuditLogEntity>,
+    @Inject(IAuditLogRepository)
+    private readonly repository: IAuditLogRepository,
   ) {}
 
   record(
@@ -17,14 +16,12 @@ export class AuditLogService {
     resourceId: string | null,
     metadata?: Record<string, unknown>,
   ): Promise<AuditLogEntity> {
-    return this.repository.save(
-      this.repository.create({
-        actorUserId,
-        action,
-        resourceType,
-        resourceId,
-        metadata: metadata ?? null,
-      }),
-    );
+    return this.repository.create({
+      actorUserId,
+      action,
+      resourceType,
+      resourceId,
+      metadata: metadata ?? null,
+    });
   }
 }
