@@ -51,6 +51,7 @@ export class AuthController {
       name: user.name,
       email: user.email,
       roles: user.roleSlugs,
+      permissions: user.permissions,
       mustChangePassword: user.mustChangePassword,
     };
   }
