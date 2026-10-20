@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, In, Repository } from 'typeorm';
+import { EntityManager, ILike, In, Repository } from 'typeorm';
 import { UserEntity } from '../entities/user.entity';
 import { RoleEntity } from '../../access/entities/role.entity';
 import {
@@ -48,8 +48,17 @@ export class UserRepository extends IUserRepository {
     });
   }
 
-  async findPage(page: number, limit: number) {
+  async findPage(page: number, limit: number, search?: string) {
+    const term = search?.trim();
+    const escaped = term?.replace(/[\\%_]/g, (char) => `\\${char}`);
     const [items, total] = await this.repository.findAndCount({
+      where: escaped
+        ? [
+            { name: ILike(`%${escaped}%`) },
+            { email: ILike(`%${escaped}%`) },
+          ]
+        : undefined,
+      relations: { roles: true },
       order: { createAt: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,

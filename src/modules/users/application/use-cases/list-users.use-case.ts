@@ -8,12 +8,16 @@ export class ListUsersUseCase {
     private readonly users: IUserRepository,
   ) {}
 
-  async execute(page = 1, limit = 25) {
+  async execute(page = 1, limit = 25, search?: string) {
     const safePage = Number.isFinite(page) ? Math.max(1, Math.floor(page)) : 1;
     const safeLimit = Number.isFinite(limit)
       ? Math.min(100, Math.max(1, Math.floor(limit)))
       : 25;
-    const result = await this.users.findPage(safePage, safeLimit);
+    const result = await this.users.findPage(
+      safePage,
+      safeLimit,
+      search?.slice(0, 100),
+    );
     return { ...result, page: safePage, limit: safeLimit };
   }
 }

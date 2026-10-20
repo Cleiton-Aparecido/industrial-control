@@ -106,9 +106,13 @@ export class ProductsController {
   })
   @ApiPageQueries()
   @ApiPaged(ProductsPageResponseDto, 'Lista paginada de produtos ativos.')
-  listPublic(@Query('page') page?: string, @Query('limit') limit?: string) {
+  listPublic(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+  ) {
     const paging = pagination(page, limit);
-    return this.listPublicProducts.execute(paging.page, paging.limit);
+    return this.listPublicProducts.execute(paging.page, paging.limit, search);
   }
 
   @Get(':id/stock')

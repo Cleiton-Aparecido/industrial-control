@@ -24,7 +24,11 @@ export abstract class IProductRepository {
     limit: number,
     search?: string,
   ): Promise<ProductPage>;
-  abstract findActivePage(page: number, limit: number): Promise<ProductPage>;
+  abstract findActivePage(
+    page: number,
+    limit: number,
+    search?: string,
+  ): Promise<ProductPage>;
   abstract findById(id: string): Promise<ProductEntity | null>;
   abstract save(product: ProductEntity): Promise<ProductEntity>;
 }

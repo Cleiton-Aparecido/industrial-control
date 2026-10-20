@@ -77,12 +77,18 @@ export class UserController {
     minimum: 1,
     maximum: 100,
   })
-  @ApiOperation({ summary: 'Listar usuários paginados' })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiOperation({ summary: 'Listar usuários paginados, com papéis' })
   @ApiResponse({ status: 200, description: 'Página de usuários retornada.' })
-  async findAll(@Query('page') page?: string, @Query('limit') limit?: string) {
+  async findAll(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+  ) {
     const result = await this.listUsers.execute(
       Number(page) || 1,
       Number(limit) || 25,
+      search,
     );
     return {
       ...result,
@@ -198,6 +204,7 @@ export class UserController {
     isActive: boolean;
     mustChangePassword: boolean;
     deactivatedAt: Date | null;
+    roles?: { id: string; name: string; slug: string }[];
   }) {
     return {
       id: user.id,
@@ -208,6 +215,11 @@ export class UserController {
       isActive: user.isActive,
       mustChangePassword: user.mustChangePassword,
       deactivatedAt: user.deactivatedAt,
+      ...(user.roles
+        ? {
+            roles: user.roles.map(({ id, name, slug }) => ({ id, name, slug })),
+          }
+        : {}),
     };
   }
 }
