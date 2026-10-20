@@ -1,4 +1,5 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { CorrelationIdMiddleware } from './infra/data/correlation-id.middleware';
 import { APP_GUARD } from '@nestjs/core';
 import { UsersModules } from './modules/users/user.module';
 import { ConfigModule } from '@nestjs/config';
@@ -31,4 +32,8 @@ import { LogisticsModule } from './modules/logistics/logistics.module';
   controllers: [],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(CorrelationIdMiddleware).forRoutes('*');
+  }
+}

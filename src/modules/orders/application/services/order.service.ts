@@ -27,6 +27,19 @@ import { fromMilliUnits, toMilliUnits } from 'src/infra/stock/stock-quantity';
 import { OperationsUseCaseSupport } from 'src/modules/operations/application/services/operations-use-case-support';
 import { CreateOrderDto } from '../dto/order.dto';
 
+const DUPLICATE_ORDER_MESSAGE =
+  'Operação duplicada: já existe um pedido criado com esta Idempotency-Key.';
+
+function isIdempotencyConstraint(error: unknown): boolean {
+  const e = error as {
+    constraint?: string;
+    driverError?: { constraint?: string };
+  };
+  return (
+    (e.constraint ?? e.driverError?.constraint) === 'UQ_orders_idempotency_key'
+  );
+}
+
 @Injectable()
 export class OrderService extends OperationsUseCaseSupport {
   async create(
@@ -61,10 +74,7 @@ export class OrderService extends OperationsUseCaseSupport {
             where: { idempotencyKey: normalizedKey },
           });
           if (existing) {
-            if (existing.createdByUserId !== actorId) {
-              throw new ConflictException('Idempotency-Key já utilizada');
-            }
-            return this.orderResponse(manager, existing);
+            throw new ConflictException(DUPLICATE_ORDER_MESSAGE);
           }
         }
 
@@ -197,14 +207,12 @@ export class OrderService extends OperationsUseCaseSupport {
         return this.orderResponse(manager, order);
       });
     } catch (error) {
-      if (normalizedKey && isUniqueConstraintViolation(error)) {
-        const existing = await this.dataSource
-          .getRepository(OrderEntity)
-          .findOneBy({ idempotencyKey: normalizedKey });
-        if (existing?.createdByUserId === actorId) {
-          return this.orderResponse(this.dataSource.manager, existing);
-        }
-        throw new ConflictException('Idempotency-Key já utilizada');
+      if (
+        normalizedKey &&
+        isUniqueConstraintViolation(error) &&
+        isIdempotencyConstraint(error)
+      ) {
+        throw new ConflictException(DUPLICATE_ORDER_MESSAGE);
       }
       throw error;
     }

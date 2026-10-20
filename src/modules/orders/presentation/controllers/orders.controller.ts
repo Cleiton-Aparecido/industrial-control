@@ -67,7 +67,8 @@ export class OrdersController {
   @ApiHeader({
     name: 'Idempotency-Key',
     required: false,
-    description: 'Chave para repetição segura da criação; até 150 caracteres.',
+    description:
+      'Chave estável por pedido (UUID gerado pelo cliente); até 150 caracteres. Repetição da mesma chave retorna 409 sem criar outro pedido.',
   })
   @ApiCreatedResponse({
     description:

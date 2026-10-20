@@ -14,6 +14,19 @@ import { StockMovementType } from 'src/infra/stock/entities/stock-movement.entit
 import { CreateOrderDto } from '../../../modules/orders/application/dto/order.dto';
 import { fromMilliUnits, toMilliUnits } from 'src/infra/stock/stock-quantity';
 
+const DUPLICATE_ORDER_MESSAGE =
+  'Operação duplicada: já existe um pedido criado com esta Idempotency-Key.';
+
+function isIdempotencyConstraint(error: unknown): boolean {
+  const e = error as {
+    constraint?: string;
+    driverError?: { constraint?: string };
+  };
+  return (
+    (e.constraint ?? e.driverError?.constraint) === 'UQ_orders_idempotency_key'
+  );
+}
+
 @Injectable()
 export class OrderService {
   constructor(
@@ -48,10 +61,7 @@ export class OrderService {
           await manager.lockIdempotencyKey(normalizedKey);
           const existing = await manager.findByIdempotencyKey(normalizedKey);
           if (existing) {
-            if (existing.createdByUserId !== actorId) {
-              throw new ConflictException('Idempotency-Key já utilizada');
-            }
-            return manager.withItems(existing);
+            throw new ConflictException(DUPLICATE_ORDER_MESSAGE);
           }
         }
 
@@ -139,12 +149,12 @@ export class OrderService {
         return manager.withItems(order);
       });
     } catch (error) {
-      if (normalizedKey && isUniqueConstraintViolation(error)) {
-        const existing = await this.orders.findByIdempotencyKey(normalizedKey);
-        if (existing?.createdByUserId === actorId) {
-          return this.orders.withItems(existing);
-        }
-        throw new ConflictException('Idempotency-Key já utilizada');
+      if (
+        normalizedKey &&
+        isUniqueConstraintViolation(error) &&
+        isIdempotencyConstraint(error)
+      ) {
+        throw new ConflictException(DUPLICATE_ORDER_MESSAGE);
       }
       throw error;
     }
