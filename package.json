@@ -34,6 +34,7 @@
     "@nestjs/swagger": "^11.4.7",
     "@nestjs/throttler": "^6.7.1",
     "@nestjs/typeorm": "^11.0.3",
+    "@supabase/supabase-js": "^2.57.4",
     "argon2": "^0.45.1",
     "bcryptjs": "^3.0.3",
     "class-transformer": "^0.5.1",

@@ -1,11 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { ProductService } from 'src/infra/products/services/product.service';
+import { ProductImageResponseService } from '../services/product-image-response.service';
 
 @Injectable()
 export class SetProductActiveUseCase {
-  constructor(private readonly products: ProductService) {}
+  constructor(
+    private readonly products: ProductService,
+    private readonly imageResponses: ProductImageResponseService,
+  ) {}
 
-  execute(id: string, isActive: boolean, actorId: string) {
-    return this.products.setActive(id, isActive, actorId);
+  async execute(id: string, isActive: boolean, actorId: string) {
+    return this.imageResponses.present(
+      await this.products.setActive(id, isActive, actorId),
+    );
   }
 }
