@@ -55,8 +55,12 @@ export class ProductService {
     return { items, total, page, limit };
   }
 
-  async listActive(page = 1, limit = 25) {
-    const { items, total } = await this.products.findActivePage(page, limit);
+  async listActive(page = 1, limit = 25, search?: string) {
+    const { items, total } = await this.products.findActivePage(
+      page,
+      limit,
+      search,
+    );
     return { items, total, page, limit };
   }
 

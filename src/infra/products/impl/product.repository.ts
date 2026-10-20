@@ -71,11 +71,21 @@ export class ProductRepository extends IProductRepository {
     return { items, total };
   }
 
-  async findActivePage(page: number, limit: number): Promise<ProductPage> {
+  async findActivePage(
+    page: number,
+    limit: number,
+    search?: string,
+  ): Promise<ProductPage> {
+    const term = search?.trim();
     const [items, total] = await this.dataSource
       .getRepository(ProductEntity)
       .findAndCount({
-        where: { isActive: true },
+        where: term
+          ? [
+              { isActive: true, name: ILike(`%${term}%`) },
+              { isActive: true, sku: ILike(`%${term}%`) },
+            ]
+          : { isActive: true },
         order: { name: 'ASC', images: { createdAt: 'ASC' } },
         relations: { images: true },
         skip: (page - 1) * limit,

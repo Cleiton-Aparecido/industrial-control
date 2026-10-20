@@ -17,7 +17,11 @@ export abstract class IUserRepository {
   abstract findByEmail(email: string): Promise<UserEntity | null>;
   abstract findForAuthorization(id: string): Promise<UserEntity | null>;
   abstract findAll(): Promise<UserEntity[]>;
-  abstract findPage(page: number, limit: number): Promise<UserPage>;
+  abstract findPage(
+    page: number,
+    limit: number,
+    search?: string,
+  ): Promise<UserPage>;
   abstract update(id: string, data: UpdateUserData): Promise<UserEntity | null>;
   abstract updatePassword(id: string, passwordHash: string): Promise<boolean>;
   abstract replacePasswordHash(
