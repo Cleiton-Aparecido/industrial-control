@@ -1,13 +1,13 @@
 {
-  "planHash": "013d084603e9dd99fd7b4f57c03434aa0fca244b5d7ad1a75e86dd254d823c66",
+  "planHash": "a028088fef315bed4760533bf1350e8c9b14e86f802744cb115a5b9965b27a82",
   "phase": "standalone",
-  "recordedAtUtc": "2026-10-16T00:40:19.3450004Z",
-  "retryCount": 7,
+  "recordedAtUtc": "2026-10-20T03:18:03.5602240Z",
+  "retryCount": 1,
   "resetBaseline": false,
   "complete": true,
   "result": {
     "setupSucceeded": true,
-    "setupDurationMs": 515,
+    "setupDurationMs": 555,
     "setupFailureOutput": null,
     "assertions": [
       {
@@ -20,7 +20,7 @@
         "skippedReason": null,
         "exitCode": 0,
         "outputSample": "",
-        "durationMs": 3707
+        "durationMs": 6080
       },
       {
         "name": "nest-build",
@@ -32,7 +32,19 @@
         "skippedReason": null,
         "exitCode": 0,
         "outputSample": "$ nest build\r\n",
-        "durationMs": 6769
+        "durationMs": 8596
+      },
+      {
+        "name": "eslint-product-image-flow",
+        "kind": "process",
+        "verificationMethod": "exit-code",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": 0,
+        "outputSample": "",
+        "durationMs": 10932
       },
       {
         "name": "tests-pass",
@@ -43,13 +55,13 @@
         "skipped": false,
         "skippedReason": null,
         "exitCode": 0,
-        "outputSample": "$ jest \u0022--runInBand\u0022\r\nPASS test/login.usecase.spec.ts\r\nPASS test/create-user.use-case.spec.ts\r\nPASS test/change-password.usecase.spec.ts\r\nPASS test/auth.service.spec.ts\r\nPASS test/jwt-auth.guard.spec.ts\r\nPASS test/permissions.guard.spec.ts\r\nPASS test/document-number.spec.ts\r\n\r\nTest Suites: 7 passed, 7 total\r\nTests:       23 passed, 23 total\r\nSnapshots:   0 total\r\nTime:        3.742 s, estimated 4 s\r\nRan all test suites.\r\n",
-        "durationMs": 5288,
+        "outputSample": "$ jest \u0022--runInBand\u0022\r\nPASS test/unit/jwt-auth.guard.spec.ts\r\n  \u25CF Console\r\n\r\n    console.log\r\n      \u001B[32m\u2714\u001B[0m \u001B[33mConsole Ninja\u001B[0m extension is connected to \u001B[33mNest.js\u001B[0m, see \u001B[36mhttps://tinyurl.com/2vt8jxzw\u001B[0m\r\n\r\n      at new oA (../../../.vscode/extensions/wallabyjs.console-ninja-1.0.544/out/buildHook/index.js:1:4295523)\r\n\r\nPASS test/unit/permissions.guard.spec.ts\r\n  \u25CF Console\r\n\r\n    console.log\r\n      \u001B[32m\u2714\u001B[0m \u001B[33mConsole Ninja\u001B[0m extension is connected to \u001B[33mNest.js\u001B[0m, see \u001B[36mhttps://tinyurl.com/2vt8jxzw\u001B[0m\r\n\r\n      at new oA (../../../.vscode/extensions/wallabyjs.console-ninja-1.0.544/out/buildHook/index.js:1:4295523)\r\n\r\nPASS test/unit/create-product.use-case.spec.ts\r\n\u001B[33m[Nest] 19796  - \u001B[39m20/10/2026, 00:17:59 \u001B[33m   WARN\u001B[39m \u001B[38;5;3m[CreateProductUseCase] \u001B[39m\u001B[33mStorage compensation failed for product image path: products/image.png\u001B[39m\r\nPASS test/unit/auth.service.spec.ts\r\nPASS test/unit/change-password.usecase.spec.ts\r\nPASS test/unit/create-user.use-case.spec.ts\r\nPASS test/unit/product-image-processor.spec.ts\r\nPASS test/unit/login.usecase.spec.ts\r\nPASS test/unit/supabase-storage.service.spec.ts\r\nPASS test/unit/document-number.spec.ts\r\nPASS test/unit/list-public-products.use-case.spec.ts\r\nPASS test/unit/product-image-response.service.spec.ts\r\nPASS test/unit/money.spec.ts\r\n\r\nTest Suites: 13 passed, 13 total\r\nTests:       44 passed, 44 total\r\nSnapshots:   0 total\r\nTime:        10.311 s, estimated 11 s\r\nRan all test suites.\r\n",
+        "durationMs": 12956,
         "testResults": {
           "testFramework": "jest",
           "runnerDetectedFrom": "package_json",
-          "testsTotal": 23,
-          "testsPassed": 23,
+          "testsTotal": 44,
+          "testsPassed": 44,
           "testsFailed": 0,
           "testsSkipped": 0,
           "parseFailed": false
@@ -89,6 +101,43 @@
         "resolvedExecutable": "C:\\Users\\cleit\\AppData\\Roaming\\npm\\pnpm.CMD",
         "args": [
           "build"
+        ],
+        "cwd": "c:\\Users\\cleit\\Desktop\\agrolider\\industrial-control",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      },
+      {
+        "source": "eslint-product-image-flow",
+        "resolvedExecutable": "C:\\Users\\cleit\\AppData\\Roaming\\npm\\pnpm.CMD",
+        "args": [
+          "exec",
+          "eslint",
+          "src/main.ts",
+          "src/infra/storage/abstract/file-storage.ts",
+          "src/infra/storage/supabase/supabase-storage.module.ts",
+          "src/infra/storage/supabase/supabase-storage.service.ts",
+          "src/infra/products/abstract/product.repository.ts",
+          "src/infra/products/entities/product-image.entity.ts",
+          "src/infra/products/entities/product.entity.ts",
+          "src/infra/products/impl/product.repository.ts",
+          "src/infra/products/services/product.service.ts",
+          "src/modules/products/application/dto/product.dto.ts",
+          "src/modules/products/application/services/product-image-processor.ts",
+          "src/modules/products/application/services/product-image-response.service.ts",
+          "src/modules/products/application/use-cases/create-product.use-case.ts",
+          "src/modules/products/application/use-cases/find-product-by-id.use-case.ts",
+          "src/modules/products/application/use-cases/list-products.use-case.ts",
+          "src/modules/products/application/use-cases/list-public-products.use-case.ts",
+          "src/modules/products/application/use-cases/set-product-active.use-case.ts",
+          "src/modules/products/application/use-cases/update-product.use-case.ts",
+          "src/modules/products/products.module.ts",
+          "src/modules/products/presentation/controllers/products.controller.ts",
+          "test/unit/create-product.use-case.spec.ts",
+          "test/unit/list-public-products.use-case.spec.ts",
+          "test/unit/product-image-processor.spec.ts",
+          "test/unit/product-image-response.service.spec.ts",
+          "test/unit/supabase-storage.service.spec.ts"
         ],
         "cwd": "c:\\Users\\cleit\\Desktop\\agrolider\\industrial-control",
         "env": {},

@@ -4,7 +4,10 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { IProductRepository } from '../abstract/product.repository';
+import {
+  CreateProductImageData,
+  IProductRepository,
+} from '../abstract/product.repository';
 import { AuditLogService } from 'src/infra/data/audit-log.service';
 import { isUniqueConstraintViolation } from 'src/infra/data/is-unique-constraint-violation';
 import { fromMinorUnits, toMinorUnits } from 'src/infra/money/money';
@@ -21,7 +24,11 @@ export class ProductService {
     private readonly audit: AuditLogService,
   ) {}
 
-  async create(input: CreateProductDto, actorId: string) {
+  async create(
+    input: CreateProductDto,
+    actorId: string,
+    images: CreateProductImageData[] = [],
+  ) {
     try {
       return await this.products.create(
         {
@@ -33,6 +40,7 @@ export class ProductService {
           isActive: true,
         },
         actorId,
+        images,
       );
     } catch (error) {
       if (isUniqueConstraintViolation(error)) {
@@ -44,6 +52,11 @@ export class ProductService {
 
   async list(page = 1, limit = 25, search?: string) {
     const { items, total } = await this.products.findPage(page, limit, search);
+    return { items, total, page, limit };
+  }
+
+  async listActive(page = 1, limit = 25) {
+    const { items, total } = await this.products.findActivePage(page, limit);
     return { items, total, page, limit };
   }
 

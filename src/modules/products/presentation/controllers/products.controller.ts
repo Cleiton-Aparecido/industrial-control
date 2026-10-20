@@ -34,11 +34,12 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CurrentUser } from 'src/infra/auth/decorator/current-user.decorator';
-import { RequirePermissions } from 'src/infra/auth/auth-metadata';
+import { Public, RequirePermissions } from 'src/infra/auth/auth-metadata';
 import type { AuthenticatedUser } from 'src/infra/auth/service/auth.service';
 import { CreateProductUseCase } from '../../application/use-cases/create-product.use-case';
 import { FindProductByIdUseCase } from '../../application/use-cases/find-product-by-id.use-case';
 import { ListProductsUseCase } from '../../application/use-cases/list-products.use-case';
+import { ListPublicProductsUseCase } from 'src/modules/products/application/use-cases/list-public-products.use-case';
 import { SetProductActiveUseCase } from '../../application/use-cases/set-product-active.use-case';
 import { UpdateProductUseCase } from '../../application/use-cases/update-product.use-case';
 import { GetProductStockBalanceUseCase } from 'src/modules/stock/application/use-cases/get-product-stock-balance.use-case';
@@ -52,6 +53,7 @@ export class ProductsController {
   constructor(
     private readonly createProduct: CreateProductUseCase,
     private readonly listProducts: ListProductsUseCase,
+    private readonly listPublicProducts: ListPublicProductsUseCase,
     private readonly findProductById: FindProductByIdUseCase,
     private readonly updateProduct: UpdateProductUseCase,
     private readonly setProductActive: SetProductActiveUseCase,
@@ -93,6 +95,20 @@ export class ProductsController {
   ) {
     const paging = pagination(page, limit);
     return this.listProducts.execute(paging.page, paging.limit, search);
+  }
+
+  @Get('public')
+  @Public()
+  @ApiOperation({
+    summary: 'Listar produtos ativos publicamente',
+    description: 'Retorna produtos ativos paginados sem exigir autenticação.',
+    security: [],
+  })
+  @ApiPageQueries()
+  @ApiPaged(ProductsPageResponseDto, 'Lista paginada de produtos ativos.')
+  listPublic(@Query('page') page?: string, @Query('limit') limit?: string) {
+    const paging = pagination(page, limit);
+    return this.listPublicProducts.execute(paging.page, paging.limit);
   }
 
   @Get(':id/stock')

@@ -3,10 +3,12 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, ILike } from 'typeorm';
 import {
   CreateProductData,
+  CreateProductImageData,
   IProductRepository,
   ProductPage,
 } from '../abstract/product.repository';
 import { ProductEntity } from '../entities/product.entity';
+import { ProductImageEntity } from '../entities/product-image.entity';
 import { StockBalanceEntity } from 'src/infra/stock/entities/stock-balance.entity';
 
 @Injectable()
@@ -15,10 +17,21 @@ export class ProductRepository extends IProductRepository {
     super();
   }
 
-  create(data: CreateProductData, actorId: string): Promise<ProductEntity> {
+  create(
+    data: CreateProductData,
+    actorId: string,
+    images: CreateProductImageData[] = [],
+  ): Promise<ProductEntity> {
     return this.dataSource.transaction(async (manager) => {
       const products = manager.getRepository(ProductEntity);
       const product = await products.save(products.create(data));
+      if (images.length) {
+        product.images = await manager
+          .getRepository(ProductImageEntity)
+          .save(images.map((image) => ({ ...image, productId: product.id })));
+      } else {
+        product.images = [];
+      }
       await manager.getRepository(StockBalanceEntity).save({
         productId: product.id,
       });
@@ -50,7 +63,21 @@ export class ProductRepository extends IProductRepository {
               { sku: ILike(`%${search.trim()}%`) },
             ]
           : undefined,
-        order: { name: 'ASC' },
+        order: { name: 'ASC', images: { createdAt: 'ASC' } },
+        relations: { images: true },
+        skip: (page - 1) * limit,
+        take: limit,
+      });
+    return { items, total };
+  }
+
+  async findActivePage(page: number, limit: number): Promise<ProductPage> {
+    const [items, total] = await this.dataSource
+      .getRepository(ProductEntity)
+      .findAndCount({
+        where: { isActive: true },
+        order: { name: 'ASC', images: { createdAt: 'ASC' } },
+        relations: { images: true },
         skip: (page - 1) * limit,
         take: limit,
       });
@@ -58,7 +85,11 @@ export class ProductRepository extends IProductRepository {
   }
 
   findById(id: string): Promise<ProductEntity | null> {
-    return this.dataSource.getRepository(ProductEntity).findOneBy({ id });
+    return this.dataSource.getRepository(ProductEntity).findOne({
+      where: { id },
+      relations: { images: true },
+      order: { images: { createdAt: 'ASC' } },
+    });
   }
 
   save(product: ProductEntity): Promise<ProductEntity> {
